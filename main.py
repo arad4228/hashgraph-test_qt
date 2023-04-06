@@ -17,15 +17,14 @@ class WindowClass(QMainWindow, main_form_class):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setWindowTitle("PET HashGraph")
 
         # self.nodeNumber.valueChanged.connect(self.printValue)
         self.pushButton.clicked.connect(self.click_Start)
 
-        # Auto Sink는 항상 켜져있다.
+        self.group_checkBoxes.buttonClicked[int].connect(self.clicked_BtnSinkType)
+        # Auto Sink는 항상 켜진 상태이다.
         self.checkBox_auto.toggle()
-        # 만약 min 버튼이 눌리거나 auto 버튼이 눌린다면
-        self.checkBox_min.clicked.connect(self.clicked_Btn_min)
-        self.checkBox_auto.clicked.connect(self.clicked_Btn_auto)
 
     # def printValue(self):
     #     print(self.nodeNumber.value())
@@ -34,17 +33,14 @@ class WindowClass(QMainWindow, main_form_class):
     def click_Start(self):
         self.nodeCount = self.nodeNumber.value()
 
-    # 만약 min 버튼이 눌렸다면
-    def clicked_Btn_min(self):
-        print("Min 버튼이 눌림")
-        self.checkBox_auto.toggle()
-        self.sink_status = 1
-    
-    # 만약 auto 버튼이 눌렸다면
-    def clicked_Btn_auto(self):
-        print("auto 버튼이 눌림")
-        self.checkBox_min.toggle()
-        self.sink_status = 0
+    def clicked_BtnSinkType(self, id):
+        if self.checkBox_auto.isChecked():
+            print("Auto Clicked")
+            self.sink_status = 0
+        else:
+            print("Min Clicked")
+            self.sink_status = 1
+        print(self.sink_status)
     
 
 if __name__ == "__main__":
