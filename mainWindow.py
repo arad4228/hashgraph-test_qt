@@ -30,6 +30,8 @@ class Main_WindowClass(QMainWindow, main_form_class):
             self.graph.setup_nodeCount(self.nodeCount)
             self.graph.exec()
             self.show()
+        else:
+            QMessageBox.warning(self, "노드 숫자 에러", "해당 Hash Graph를 그리기위해서는 최소한 3개 이상의 노드가 필요합니다.")
 
     def clicked_BtnSinkType(self, id):
         if self.checkBox_auto.isChecked():
