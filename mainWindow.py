@@ -28,7 +28,7 @@ class Main_WindowClass(QMainWindow, main_form_class):
             self.hide()
             self.graph = Grapth_windowClass()
             self.graph.setup_nodeCount(self.nodeCount)
-            self.graph.exec_()
+            self.graph.exec()
             self.show()
 
     def clicked_BtnSinkType(self, id):
