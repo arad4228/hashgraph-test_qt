@@ -1,5 +1,6 @@
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
+from hashGrapth import *
 
 main_form_class = uic.loadUiType("./uis/main_GUI.ui")[0]
 
@@ -23,6 +24,12 @@ class Main_WindowClass(QMainWindow, main_form_class):
     # 다음의 화면으로 넘어간다.
     def click_Start(self):
         self.nodeCount = self.nodeNumber.value()
+        if self.nodeCount >= 3:
+            self.hide()
+            self.graph = Grapth_windowClass()
+            self.graph.setup_nodeCount(self.nodeCount)
+            self.graph.exec_()
+            self.show()
 
     def clicked_BtnSinkType(self, id):
         if self.checkBox_auto.isChecked():
