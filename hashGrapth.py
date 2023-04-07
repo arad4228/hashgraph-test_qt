@@ -2,10 +2,13 @@ import os
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from matplotlib import animation    # 에니메이션을 위해서
 import matplotlib.pyplot as plt     # 그래프를 그리기 위해서
 import networkx as nx               # 그래프를 그리기 위해서 불러온다.
 from functools import partial
+import plotly.graph_objects as go
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas    # pyQt에 그리기 위해서 사용
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
@@ -32,11 +35,13 @@ class Grapth_windowClass(QDialog, QWidget):
         self.BtnDrawGraph.clicked.connect(self.clicked_btn)
 
         self.fig = plt.Figure()
-        self.canvas = FigureCanvas(self.fig)
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        # self.canvas = FigureCanvas(self.fig)
+        # self.toolbar = NavigationToolbar(self.canvas, self)
+        self.webEngineview = QWebEngineView()
+
         leftLayout = QVBoxLayout()
-        leftLayout.addWidget(self.toolbar)
-        leftLayout.addWidget(self.canvas)
+        # leftLayout.addWidget(self.toolbar)
+        leftLayout.addWidget(self.webEngineview)
 
         # Right Layout
         rightLayout = QVBoxLayout()
