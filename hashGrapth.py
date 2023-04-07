@@ -85,29 +85,28 @@ class Grapth_windowClass(QDialog, QWidget):
                 nodes.append((i,j))
         return nodes
 
-    # def animate(self, idx, nodes, G) :
-    #     if idx >= len(nodes) :
-    #         os.system("pause")
-    #     i = nodes[idx][0]
-    #     j = nodes[idx][1]
-    #     G.add_node((i, j))
-    #     G.add_edge((i, j - 1), (i, j))
-    #     nx.draw(G, pos=pos, nodelist = [(i, j)], node_color=self.colorList[i%4], with_labels=True)
-        
+    def animate(self, idx, nodes, G, pos, color, ax):
+        if idx >= len(nodes) :
+            os.system("pause")
+        i = nodes[idx][0]
+        j = nodes[idx][1]
+        G.add_node((i, j))
+        G.add_edge((i, j - 1), (i, j))
+        nx.draw(G, pos=pos, nodelist=[(i, j)], node_color=color[(i, j)], with_labels=True, ax=ax)
+
     def clicked_btn(self):
         self.fig.clf()
-        print("click!")
         fig = plt.figure()
-        self.ax = self.fig.add_subplot(1,1,1)
+        ax = self.fig.add_subplot(1,1,1)
         G = self.make_networkx()
         pos = self.make_position()
         color = self.select_color()
 
-        nx.draw(G, pos=pos, with_labels=True, ax=self.ax)
+        nx.draw(G, pos=pos, with_labels=True, ax=ax)
         for i in range(self.graph_nodeCount):
-            nx.draw_networkx_nodes(G, pos=pos, nodelist=[(i,0)], node_color = self.colorList[i%4], ax=self.ax)
+            nx.draw_networkx_nodes(G, pos=pos, nodelist=[(i,0)], node_color=color[(i, 0)], ax=ax)
 
         nodes = self.make_nodes()
 
-        # ani = animation.FuncAnimation(self.fig, partial(animate, nodes=nodes))
+        ani = animation.FuncAnimation(self.fig, partial(self.animate, nodes=nodes, G=G, pos=pos, color=color, ax=ax), frames=len(nodes), interval=500, repeat=False)
         self.canvas.draw()
