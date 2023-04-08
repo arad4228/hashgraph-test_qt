@@ -2,7 +2,7 @@ import os
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import *
 from matplotlib import animation    # 에니메이션을 위해서
 import matplotlib.pyplot as plt     # 그래프를 그리기 위해서
 import networkx as nx               # 그래프를 그리기 위해서 불러온다.
@@ -14,7 +14,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 
 # Graph_form_class = uic.loadUiType("./uis/hash_Graph_GUI.ui")[0]
 
-class Grapth_windowClass(QDialog, QWidget):
+class Graph_windowClass(QDialog, QWidget):
     graph_nodeCount = 0
     N = 7
 
