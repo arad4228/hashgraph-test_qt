@@ -11,6 +11,33 @@ import plotly
 
 # Graph_form_class = uic.loadUiType("./uis/hash_Graph_GUI.ui")[0]
 
+updatemenus = [
+    {
+        'buttons': [
+            {
+                'label': 'Play',
+                'method': 'animate',
+                'args': [None, {'frame': {'duration': 100, 'redraw': False},
+                                 'fromcurrent': True, 'transition': {'duration':0}}],
+            },
+            {
+                'label': 'Pause',
+                'method': 'animate',
+                'args': [[None], {'frame': {'duration': 0, 'redraw': False},
+                                 'mode': 'immediate', 'transition': {'duration': 0}}],
+            }
+        ],
+        'direction': 'left',
+        'pad': {'r': 10, 't': 87},
+        'showactive': False,
+        'type': 'buttons',
+        'x': 0.1,
+        'xanchor': 'right',
+        'y': 0,
+        'yanchor': 'top'
+    }
+]
+
 class Graph_windowClass(QDialog, QWidget):
     graph_nodeCount = 0
     N = 7
@@ -133,6 +160,15 @@ class Graph_windowClass(QDialog, QWidget):
                                     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
     
+        frames = [go.Frame(
+            data=[
+                go.Scatter(x=self.edge_x[:3 * (i+1)], y=self.edge_y[:3 * (i+1)]), 
+                go.Scatter(x=self.node_x[:i+1], y=self.node_y[:i+1])])
+        for i in range(self.graph_nodeCount*self.N)]
+
+        fig.update(frames=frames)
+        fig.update_layout(updatemenus=updatemenus)
+        
         # HTML 파일 생성 및 로드
         html = plotly.io.to_html(fig, include_plotlyjs=True, full_html=True)
         with open('graph.html', 'w', encoding='utf-8') as f:
