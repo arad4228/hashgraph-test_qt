@@ -3,14 +3,11 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebEngineWidgets import *
-from matplotlib import animation    # 에니메이션을 위해서
-import matplotlib.pyplot as plt     # 그래프를 그리기 위해서
-import networkx as nx               # 그래프를 그리기 위해서 불러온다.
-from functools import partial
-import plotly.graph_objects as go
+from PyQt5.QtCore import QUrl
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas    # pyQt에 그리기 위해서 사용
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import networkx as nx               # 그래프를 그리기 위해서 불러온다.
+import plotly.graph_objects as go
+import plotly
 
 # Graph_form_class = uic.loadUiType("./uis/hash_Graph_GUI.ui")[0]
 
@@ -19,6 +16,12 @@ class Graph_windowClass(QDialog, QWidget):
     N = 7
 
     colorList = ["blue", "red", "green", "yellow"]
+
+    node_x = []
+    node_y = []
+    node_color_list = []
+    edge_x = []
+    edge_y = []
 
     def __init__(self):
         super().__init__()
@@ -34,14 +37,12 @@ class Graph_windowClass(QDialog, QWidget):
         self.BtnDrawGraph.setGeometry(800, 300, 100, 100)
         self.BtnDrawGraph.clicked.connect(self.clicked_btn)
 
-        self.fig = plt.Figure()
-        # self.canvas = FigureCanvas(self.fig)
-        # self.toolbar = NavigationToolbar(self.canvas, self)
         self.webEngineview = QWebEngineView()
 
         leftLayout = QVBoxLayout()
-        # leftLayout.addWidget(self.toolbar)
+        # plotly를 위한 공간 할당
         leftLayout.addWidget(self.webEngineview)
+
 
         # Right Layout
         rightLayout = QVBoxLayout()
@@ -58,60 +59,82 @@ class Graph_windowClass(QDialog, QWidget):
 
     def setup_nodeCount(self, nodeCount:int):
         self.graph_nodeCount = nodeCount
-        print(self.graph_nodeCount)
+
+    def clear_old_data(self):
+        self.node_x.clear()
+        self.node_y.clear()
+        self.node_color_list.clear()
+        self.edge_x.clear()
+        self.edge_y.clear()
     
-    def make_networkx(self):
+    def init_graph(self):
         # networkx 그래프 변수 생성
         g = nx.DiGraph()
 
         # 전달 받은 노드 만큼 노드를 생성.
         for i in range(self.graph_nodeCount):
-            g.add_node((i, 0))
+            g.add_node((i, 0), value = str((i,0)) +"!!!", pos =(5*i, 0), color = self.colorList[i%4])
+        
+        for i in range(self.graph_nodeCount):
+            for j in range(1,self.N):
+                g.add_node((i, j), value = str((i,j)) +"!!!", pos =(5*i, 5*j), color = self.colorList[i%4])
+                g.add_edge((i, j-1), (i, j))
         return g
+
+    def make_nodes(self, g):
+        for node in g.nodes():
+            x, y = g.nodes[node]['pos']
+            self.node_x.append(x)
+            self.node_y.append(y)
+            self.node_color_list.append(g.nodes[node]["color"])
+
+    def make_edge(self, g):
+        for edge in g.edges():
+            startPoint = edge[0]
+            endPoint = edge[1]
+            x0, y0 = g.nodes[startPoint]['pos']
+            x1, y1 = g.nodes[endPoint]['pos']
+
+            self.edge_x.append(x0)
+            self.edge_x.append(x1)
+            self.edge_x.append(None)
+            self.edge_y.append(y0)
+            self.edge_y.append(y1)
+            self.edge_y.append(None)
+            # None : 그냥 구분용
     
-    def make_position(self):
-        pos = {}
-        for i in range(self.graph_nodeCount):
-            for j in range(self.N):
-                pos[(i, j)] = [i*5, j*5]
-        return pos
-
-    def select_color(self):
-        color = {}
-        for i in range(self.graph_nodeCount):
-            for j in range(self.N):
-                color[(i, j)] = self.colorList[i%4]
-        return color
-    
-    def make_nodes(self):
-        nodes = []
-        for i in range(self.graph_nodeCount):
-            for j in range(1, self.N):
-                nodes.append((i,j))
-        return nodes
-
-    def animate(self, idx, nodes, G, pos, color, ax):
-        if idx >= len(nodes) :
-            os.system("pause")
-        i = nodes[idx][0]
-        j = nodes[idx][1]
-        G.add_node((i, j))
-        G.add_edge((i, j - 1), (i, j))
-        nx.draw(G, pos=pos, nodelist=[(i, j)], node_color=color[(i, j)], with_labels=True, ax=ax)
-
     def clicked_btn(self):
-        self.fig.clf()
-        fig = plt.figure()
-        ax = self.fig.add_subplot(1,1,1)
-        G = self.make_networkx()
-        pos = self.make_position()
-        color = self.select_color()
+        # 리스트에 데이터가 축적되는 것을 막기위해서
+        self.clear_old_data()
 
-        nx.draw(G, pos=pos, with_labels=True, ax=ax)
-        for i in range(self.graph_nodeCount):
-            nx.draw_networkx_nodes(G, pos=pos, nodelist=[(i,0)], node_color=color[(i, 0)], ax=ax)
+        # 그래프에 들어갈 데이터 준비
+        G = self.init_graph()
 
-        nodes = self.make_nodes()
+        # Edge 정보 만들기
+        self.make_edge(G)
+        # edge에 대한 줄 만들기
+        edge_trace = edge_trace = go.Scatter(x=self.edge_x, y=self.edge_y, line=dict(width=0.5), hoverinfo='none', 
+                                         mode='lines')
+        
+        # Node의 정보 만들기
+        self.make_nodes(G)
+        # Node의 정보 붙이기
+        node_trace = go.Scatter(x=self.node_x, y=self.node_y, mode='markers', hoverinfo='text', 
+                            marker=dict(color=self.node_color_list, size=20))
+    
+        node_text = []
+        for node in G.nodes():
+            node_text.append(G.nodes[node]["value"])
+    
+        node_trace.text = node_text
 
-        ani = animation.FuncAnimation(self.fig, partial(self.animate, nodes=nodes, G=G, pos=pos, color=color, ax=ax), frames=len(nodes), interval=500, repeat=False)
-        self.canvas.draw()
+        fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(showlegend=False, hovermode='closest', margin=dict(b=20,l=5,r=5,t=40),
+                                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
+    
+        # HTML 파일 생성 및 로드
+        html = plotly.io.to_html(fig, include_plotlyjs=True, full_html=True)
+        with open('graph.html', 'w', encoding='utf-8') as f:
+            f.write(html)
+        self.webEngineview.setUrl(QUrl.fromLocalFile(os.path.abspath('graph.html')))
