@@ -3,3 +3,6 @@
 
 # 파이썬 cache 파일
 __pycache__
+
+# plotly html 파일
+graph.html
